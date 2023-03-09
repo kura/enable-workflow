@@ -9,7 +9,6 @@ from requests import put
 
 repos = ("kura/vaultwarden", "kura/uptime-kuma")
 
-
 pat = getenv("PERSONAL_ACCESS_TOKEN", None)
 if not pat:
     print("Missing PERSONAL_ACCESS_TOKEN")
