@@ -10,14 +10,18 @@ from requests import put
 
 logger = logging.getLogger("enable-workflow")
 handler = logging.StreamHandler()
-formatter = logging.Formatter(
-    '%(asctime)s [%(name)-12s] %(levelname)-8s %(message)s')
+formatter = logging.Formatter('%(asctime)s  %(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 logger.setLevel(logging.DEBUG)
 
 
-repos = ("kura/vaultwarden", "kura/uptime-kuma")
+repos = getenv("REPOS", None)
+if repos:
+    repos = [r.strip() for r in repos.split(",")]
+else:
+    logger.error("Missing REPOS")
+    exit(1)
 
 
 pat = getenv("PERSONAL_ACCESS_TOKEN", None)
@@ -28,17 +32,15 @@ if not pat:
 
 def run():
     gh = Github(login_or_token=pat)
-    logger.info("Running workflow updater")
 
     for repo in repos:
         gh_repo = gh.get_repo(repo)
-        logger.info(f"Running for {gh_repo.full_name}")
         workflows = [workflow for workflow in gh_repo.get_workflows()]
         workflow, = workflows
         if workflow.state != "disabled_inactivity":
-            logger.info("Workflow is not disabled, skipping")
+            logger.info(f"Skipping '{gh_repo.full_name}' because it's still active")
         else:
-            logger.info("Updating workflow")
+            logger.info(f"Enabling {gh_repo.full_name}")
             url = f"{workflow.url}/enable"
             headers = {"Authorization": f"Bearer {pat}"}
             put(url, headers=headers)
@@ -47,5 +49,6 @@ def run():
 if __name__ == "__main__":
     while True:
         run()
-        logger.info("Sleeping")
-        sleep(3600)
+        sleep_time = os.getenv("SLEEP", 3600)
+        logger.info(f"Sleeping for {sleep_time}")
+        sleep(sleep_time)
