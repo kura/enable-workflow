@@ -13,5 +13,5 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build the Docker image
         run: |
-          docker build -f Containerfile --tag ghcr.io/kura/enable-workflow:latest
+          docker build -f Containerfile --tag ghcr.io/kura/enable-workflow:latest .
           docker push ghcr.io/kura/enable-workflow:latest
