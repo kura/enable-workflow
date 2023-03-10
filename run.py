@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import json
 import logging
 from os import getenv
 from sys import exit
@@ -35,20 +36,27 @@ def run():
 
     for repo in repos:
         gh_repo = gh.get_repo(repo)
-        workflows = [workflow for workflow in gh_repo.get_workflows()]
-        workflow, = workflows
-        if workflow.state != "disabled_inactivity":
-            logger.info(f"Skipping '{gh_repo.full_name}' because it's still active")
-        else:
-            logger.info(f"Enabling {gh_repo.full_name}")
-            url = f"{workflow.url}/enable"
-            headers = {"Authorization": f"Bearer {pat}"}
-            put(url, headers=headers)
+        for workflow in gh_repo.get_workflows():
+            if workflow.state != "disabled_inactivity":
+                logger.info(
+                    f"Skipping '{workflow.name}' on '{gh_repo.full_name}' because it's still active"
+                )
+            else:
+                url = f"{workflow.url}/enable"
+                headers = {"Authorization": f"Bearer {pat}"}
+                r = put(url, headers=headers)
+                if r.status_code >= 200 and r.status_code <= 299:
+                    logger.info(f"Enabled '{workflow.name}' on '{gh_repo.full_name}'")
+                else:
+                    logger.error(
+                        f"""Failed to enable '{workflow.name}' on '{gh_repo.full_name}': """
+                        f"""{json.loads(r.text)["message"]}"""
+                    )
 
 
 if __name__ == "__main__":
     while True:
         run()
-        sleep_time = os.getenv("SLEEP", 3600)
+        sleep_time = getenv("SLEEP", 3600)
         logger.info(f"Sleeping for {sleep_time}")
         sleep(sleep_time)
