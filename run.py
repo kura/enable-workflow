@@ -11,7 +11,12 @@ from requests import put
 
 log_level = getenv("LOG_LEVEL", "info")
 if log_level.lower() not in (
-    "debug", "info", "warning", "error", "critical", "fatal"
+    "debug",
+    "info",
+    "warning",
+    "error",
+    "critical",
+    "fatal",
 ):
     log_level = logging.INFO
     show_log_level_warning = True
@@ -21,14 +26,16 @@ else:
 
 logger = logging.getLogger("enable-workflow")
 handler = logging.StreamHandler()
-formatter = logging.Formatter('%(asctime)s  %(message)s')
+formatter = logging.Formatter("%(asctime)s %(message)s")
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 logger.setLevel(log_level)
 
 
 if show_log_level_warning:
-    logger.warning(f"""Invalid LOG_LEVEL '{getenv("LOG_LEVEL")}', setting to 'info'""")
+    logger.warning(
+        f"""Invalid LOG_LEVEL '{getenv("LOG_LEVEL")}', setting to 'info'"""
+    )
 
 
 repos = getenv("REPOS", None)
@@ -60,7 +67,9 @@ def run():
                 headers = {"Authorization": f"Bearer {pat}"}
                 r = put(url, headers=headers)
                 if r.status_code >= 200 and r.status_code <= 299:
-                    logger.info(f"Enabled '{workflow.name}' on '{gh_repo.full_name}'")
+                    logger.info(
+                        f"Enabled '{workflow.name}' on '{gh_repo.full_name}'"
+                    )
                 else:
                     logger.error(
                         f"""Failed to enable '{workflow.name}' on '{gh_repo.full_name}': """
