@@ -53,6 +53,7 @@ if not pat:
 
 
 def run():
+    logger.info(f"""Running enabler on: {", ".join(repos)}""")
     gh = Github(login_or_token=pat)
 
     for repo in repos:
