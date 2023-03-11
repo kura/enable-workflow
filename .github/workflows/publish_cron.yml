@@ -1,4 +1,4 @@
-name: Update container image via cron
+name: Publish container image via cron
 on:
   schedule:
     - cron: '0 3 * * 1'

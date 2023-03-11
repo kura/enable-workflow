@@ -1,4 +1,4 @@
-name: publish
+name: Publish container image
 on: [push]
 jobs:
   publish-docker-image:
