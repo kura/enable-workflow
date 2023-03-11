@@ -9,12 +9,26 @@ from github import Github
 from requests import put
 
 
+log_level = getenv("LOG_LEVEL", "info")
+if log_level.lower() not in (
+    "debug", "info", "warning", "error", "critical", "fatal"
+):
+    log_level = logging.INFO
+    show_log_level_warning = True
+else:
+    show_log_level_warning = False
+    log_level = getattr(logging, log_level.upper())
+
 logger = logging.getLogger("enable-workflow")
 handler = logging.StreamHandler()
 formatter = logging.Formatter('%(asctime)s  %(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(log_level)
+
+
+if show_log_level_warning:
+    logger.warning(f"""Invalid LOG_LEVEL '{getenv("LOG_LEVEL")}', setting to 'info'""")
 
 
 repos = getenv("REPOS", None)
@@ -38,7 +52,7 @@ def run():
         gh_repo = gh.get_repo(repo)
         for workflow in gh_repo.get_workflows():
             if workflow.state != "disabled_inactivity":
-                logger.info(
+                logger.debug(
                     f"Skipping '{workflow.name}' on '{gh_repo.full_name}' because it's still active"
                 )
             else:
@@ -58,5 +72,5 @@ if __name__ == "__main__":
     while True:
         run()
         sleep_time = getenv("SLEEP", 3600)
-        logger.info(f"Sleeping for {sleep_time}")
+        logger.info(f"Sleeping for {sleep_time} seconds")
         sleep(sleep_time)
