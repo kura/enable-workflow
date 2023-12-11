@@ -1,7 +1,7 @@
 FROM alpine:latest
 
 RUN apk add py3-pip && \
-    python3 -m pip install pygithub requests
+    python3 -m pip install --break-system-packages pygithub requests
 
 COPY ./run.py .
 
